@@ -6,6 +6,7 @@
 import { extend } from 'umi-request';
 import { message } from 'antd';
 import NProgress from '@/components/NProgress';
+import { getToken } from '@/utils/token';
 
 const codeMessage: any = {
   200: '服务器成功返回请求的数据。',
@@ -29,11 +30,6 @@ const request = extend({
   // errorHandler, //默认错误处理
   credentials: 'include', //默认请求是否带上cookie
   timeout: 90000, // 超时
-  headers: {
-    Authorization: '',
-    'Content-Type': 'application/json',
-    appid: '51000001', //额外参数,按照自己需求
-  },
 });
 
 interface RequestOptions {
@@ -43,6 +39,15 @@ interface RequestOptions {
 
 request.interceptors.request.use(
   (url, options): RequestOptions => {
+    let defaultHeaders = Object.assign({
+      'Content-Type': 'application/json',
+      appid: '510000001',
+    });
+    const headers = Object.assign({}, defaultHeaders, {
+      Authorization: getToken(),
+    });
+    options.headers = headers;
+    NProgress.start();
     NProgress.start();
     return {
       url: `${url}`,
