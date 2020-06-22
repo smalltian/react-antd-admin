@@ -48,7 +48,6 @@ request.interceptors.request.use(
     });
     options.headers = headers;
     NProgress.start();
-    NProgress.start();
     return {
       url: `${url}`,
       options: { ...options, interceptors: true },

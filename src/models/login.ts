@@ -66,9 +66,9 @@ const LoginModel: LoginModelType = {
               redirect = redirect.substr(redirect.indexOf('#') + 1);
             }
           }
-          history.replace(redirect);
+          history.replace({ pathname: redirect });
         } else {
-          history.replace('/');
+          history.replace({ pathname: '/' });
         }
 
         setTimeout(() => {
