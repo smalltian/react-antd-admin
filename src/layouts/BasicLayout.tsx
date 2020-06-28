@@ -1,14 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Layout, Menu, Breadcrumb } from 'antd';
 import CommonIcon from '@/components/CommonIcon';
 import HeaderMenu from '@/components/Header/HeaderMenu';
 import Logo from '@/components/Header/Logo';
 import HeadeUser from '@/components/Header/User';
-import {
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
-} from '@ant-design/icons';
 import DefaultFooter from '@/components/DefaultFooter/index';
 import { connect, ConnectProps, Link } from 'umi';
 import {
@@ -36,38 +31,41 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
   const { primaryColor, navTheme, fixedHeader, fixSiderbar } = setting;
   const { pathname } = location;
   const { routes } = route;
+  const headerMenus = routes.filter((item: any) => !item.meta.hideInMenu); // 顶部菜单
 
-  // 顶部菜单
-  const headerMenus = route.routes.filter((item: any) => !item.meta.hideInMenu);
-  // 侧边菜单
-  let leftMenus: any = [];
-
+  // 布局
   const { Header, Footer, Sider, Content } = Layout;
   const { SubMenu } = Menu;
 
+  // 动态样式
   const fixedHeaderStyle: object = fixedHeader
     ? { position: 'fixed', zIndex: 1, width: '100%' }
     : {};
   const fixedSiderStyle: object = fixSiderbar
-    ? { overflow: 'auto', height: '100vh', position: 'fixed', left: '10px' }
+    ? { overflow: 'auto', height: '100vh', position: 'fixed', left: 0 }
     : {};
   const contentStyle: object =
-    fixSiderbar && !collapsed ? { marginLeft: 200 } : { marginLeft: 80 };
+    fixSiderbar && !collapsed ? { marginLeft: 180 } : { marginLeft: 80 };
 
   // 左侧路由菜单
+
+  let leftMenus: any = [];
+  let currentMenuObj: any = null;
   if (pathname !== '/') {
-    const menuList = routes
+    currentMenuObj = routes
       .filter((item: any) => !item.meta.hideInMenu)
       .find((item: any) => {
         return pathname.indexOf(item.name) > -1;
       });
     leftMenus =
-      menuList.routes &&
-      menuList.routes.filter((item: any) => !item.meta.hideInMenu);
+      currentMenuObj.routes &&
+      currentMenuObj.routes.filter((item: any) => !item.meta.hideInMenu);
   }
 
   // 当前路由
-  const currentMenu: any = queryCurrentMenus(leftMenus, pathname);
+  const currentMenu: any = currentMenuObj
+    ? queryCurrentMenus(currentMenuObj.routes, pathname)
+    : null;
   // 选中菜单
   const selectedKeys = currentMenu
     ? queryAncestors(leftMenus, currentMenu)
@@ -78,7 +76,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
     dispatch &&
       dispatch({
         type: 'global/changeLayoutCollapsed',
-        payoload: { collapsed: !collapsed },
+        payload: { collapsed: !collapsed },
       });
   };
 
@@ -126,7 +124,6 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
                   }}
                 />
               )}
-              {/*{item.meta.icon && <UserOutlined/>}*/}
               <span>{item.meta.title}</span>
             </Link>
           </Menu.Item>
@@ -134,6 +131,10 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
       }
     });
   };
+
+  useEffect(() => {
+    console.log('==layout==');
+  });
 
   return (
     <Layout>
@@ -148,32 +149,32 @@ const BasicLayout: React.FC<BasicLayoutProps> = props => {
           <HeadeUser />
         </div>
       </Header>
-      <Layout style={{ marginTop: fixedHeader ? 74 : 0 }}>
+      <Layout style={{ marginTop: fixedHeader ? 64 : 0 }}>
         <Sider
-          width={200}
+          width={180}
           className="site-layout-background"
           style={fixedSiderStyle}
           collapsible
           collapsed={collapsed}
           onCollapse={handleCollapse}
         >
-          {selectedKeys.length > 0 && (
+          {
             <Menu
               mode="inline"
-              defaultSelectedKeys={selectedKeys}
+              selectedKeys={selectedKeys}
               style={{ height: '100%', borderRight: 0 }}
             >
               {renderMenus(leftMenus)}
             </Menu>
-          )}
+          }
         </Sider>
         <Layout className="layout-main-conent" style={contentStyle}>
           {breadcrumbTitle && (
-            <Breadcrumb>
+            <Breadcrumb className="breadcrumb">
               <Breadcrumb.Item>{breadcrumbTitle}</Breadcrumb.Item>
             </Breadcrumb>
           )}
-          <Content className="content">{children}</Content>
+          <div className="content">{children}</div>
           <Footer style={{ marginTop: '20px' }}>
             <DefaultFooter />
           </Footer>
